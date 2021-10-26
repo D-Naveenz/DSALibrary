@@ -84,7 +84,6 @@ namespace graphs
 	{
 	public:
 		IndirectedGraph(edge edges[], int edges_count);
-		~IndirectedGraph();
 
 		// Add a node
 		void addEdge(const edge& _edge);
