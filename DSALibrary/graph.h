@@ -17,26 +17,30 @@ namespace graphs
 	// structure to store edge data of the graph
 	struct edge
 	{
-		std::string start;
-		std::string end;
+		std::string a;
+		std::string b;
 	};
 
-	class Graph
+	class _graph
 	{
 	public:
-		std::vector<node*> nodeList; // Adjacency list as array of pointers
+		_graph();
+		~_graph();
 
-		Graph(edge edges[], int edges_count);
-		~Graph();
+		// The number of edges that are currently on the graph
+		int getEdgeCount();
+
+		// The number of vertexes that are currently on the graph
+		int getVertexCount();
+
+		// Returns number of paths between first given vertex and the second given vertex
+		int tracePaths(const std::string& start, const std::string& end);
+
+		// Returns number of cycles between first given vertex and the second given vertex
+		int traceCycles(const std::string& vertex);
 
 		// Print the graph
 		void display();
-
-		// Add a node
-		void addEdge(const edge& _edge);
-
-		// Remove a node
-		void removeEdge(const edge& _edge);
 
 		// Create a vertex
 		void addVertex(const std::string& name);
@@ -44,13 +48,17 @@ namespace graphs
 		// Remove a vertex
 		void removeVertex(const std::string& name);
 
-		// Returns number of paths between first given vertex and the second given vertex
-		int getPathsCount(const std::string& start, const std::string& end);
-
-		// Returns number of cycles between first given vertex and the second given vertex
-		int getCyclesCount(const std::string& vertex);
-
 	private:
+		// std::vector<std::string>* proc_vertex; // temporary variable to store processed vertexes
+
+		// Pathfinder algorithm
+		int pathFinder(const std::string& start, const std::string& end, std::optional<int> it = std::nullopt,
+			std::optional<std::vector<std::string>*> proc_vertex = std::nullopt);
+
+	protected:
+		std::vector<node*> nodeList; // Adjacency list as array of pointers
+		int edge_count;               // The number of edges that are currently on the graph
+
 		static void createNode(node* ptr, std::string name);
 
 		static void destroyNode(node* ptr, node* target);
@@ -58,8 +66,30 @@ namespace graphs
 		int findVertexByName(const std::string& vertex);
 
 		static node* findNodeByName(node* ptr, const std::string& vertex);
+	};
 
-		// Pathfinder algorithm
-		int pathsCount(const std::string& start, const std::string& end, std::optional<int> it = std::nullopt);
+	class DirectedGraph : public _graph
+	{
+	public:
+		DirectedGraph(edge edges[], int edges_count);
+
+		// Add a node
+		void addEdge(const edge& _edge);
+
+		// Remove a node
+		void removeEdge(const edge& _edge);
+	};
+
+	class IndirectedGraph : public _graph
+	{
+	public:
+		IndirectedGraph(edge edges[], int edges_count);
+		~IndirectedGraph();
+
+		// Add a node
+		void addEdge(const edge& _edge);
+
+		// Remove a node
+		void removeEdge(const edge& _edge);
 	};
 } // namespace graphs

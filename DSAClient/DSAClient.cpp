@@ -20,16 +20,16 @@ int main()
 	};
 	int edge_count = sizeof direct_edges / sizeof direct_edges[0];
 	// Construct graph
-	Graph directedGraph(direct_edges, edge_count);
+	DirectedGraph directedGraph(direct_edges, edge_count);
 	directedGraph.display();
 	cout << endl;
 
 	// Check whether there is a path from the first given vertex to the second given vertex (Question 1)
-	cout << "There is " << (directedGraph.getPathsCount("V3", "V1") ? "" : "not ") << "a path from V3 to V1" << endl;
+	cout << "There is " << (directedGraph.tracePaths("V3", "V1") ? "" : "not ") << "a path from V3 to V1" << endl;
 	// Check whether a given directed graph contains a cycle or not (Question 2)
-	cout << "There is " << (directedGraph.getCyclesCount("V1") ? "" : "not ") << "a cycle from V1" << endl;
+	cout << "There is " << (directedGraph.traceCycles("V1") ? "" : "not ") << "a cycle from V1" << endl;
 	// Returns number of paths between first given vertex and the second given vertex (Question 3)
-	int pCount = directedGraph.getPathsCount("V3", "V1");
+	int pCount = directedGraph.tracePaths("V3", "V1");
 	cout << "There ";
 	if (pCount == 0)
 	{
