@@ -18,12 +18,15 @@
     <ClInclude Include="graph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dsa_struct.h">
+    <ClInclude Include="ds_model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="graph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ds_model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

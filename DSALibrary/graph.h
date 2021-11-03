@@ -1,11 +1,10 @@
 #pragma once
 
+#include "ds_model.h"
 #include <optional>
-#include <string>
-#include <vector>
 
 // namespace for graph structure
-namespace graph
+namespace ds_graph
 {
 	// Node that store adjacency list items
 	struct node
@@ -21,26 +20,23 @@ namespace graph
 		std::string b;
 	};
 
-	class _graph
+	class _graph : public ds_common::dsaObj
 	{
 	public:
-		_graph();
+		_graph(std::string obj);
 		~_graph();
 
 		// The number of edges that are currently on the graph
 		int getEdgeCount();
 
 		// The number of vertexes that are currently on the graph
-		int getVertexCount();
+		int getSize();
 
 		// Returns number of paths between first given vertex and the second given vertex
 		int tracePaths(const std::string& start, const std::string& end);
 
 		// Returns number of cycles between first given vertex and the second given vertex
 		int traceCycles(const std::string& vertex);
-
-		// Print the graph
-		void display();
 
 		// Create a vertex
 		void addVertex(const std::string& name);
@@ -55,6 +51,8 @@ namespace graph
 		virtual void removeEdge(const edge& _edge) = 0;
 
 	private:
+		std::vector<std::string> str_out();
+
 		// Pathfinder algorithm
 		int pathFinder(const std::string& start, const std::string& end, std::optional<int> it = std::nullopt,
 			std::optional<std::vector<std::string>*> proc_vertex = std::nullopt);
@@ -99,4 +97,4 @@ namespace graph
 		// Remove a node
 		void removeEdge(const edge& _edge);
 	};
-} // namespace graphs
+} // namespace ds_graph

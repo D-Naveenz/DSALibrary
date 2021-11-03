@@ -5,7 +5,7 @@
 #include "graph.h"
 
 using namespace std;
-using namespace graph;
+using namespace ds_graph;
 
 int main()
 {
@@ -22,6 +22,7 @@ int main()
 	// Construct graph
 	DirectedGraph directedGraph(direct_edges, edge_count);
 	directedGraph.display();
+	cout << directedGraph.toString() << endl;
 	cout << endl;
 
 	// Check whether there is a path from the first given vertex to the second given vertex (Question 1)

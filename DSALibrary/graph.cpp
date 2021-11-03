@@ -3,17 +3,17 @@
 #include <utility>
 
 using namespace std;
-using namespace graph;
+using namespace ds_graph;
 
 #pragma region Public - _graph
 // Constructor
-graph::_graph::_graph()
+ds_graph::_graph::_graph(string obj) : dsaObj(obj)
 {
     edge_count = 0;
 }
 
 // Destructor
-graph::_graph::~_graph()
+ds_graph::_graph::~_graph()
 {
     // free memory of the head
     nodeList.clear();
@@ -24,7 +24,7 @@ int _graph::getEdgeCount()
     return edge_count;
 }
 
-int _graph::getVertexCount()
+int _graph::getSize()
 {
     return int(nodeList.size());
 }
@@ -41,26 +41,6 @@ int _graph::tracePaths(const string &start, const string &end)
 int _graph::traceCycles(const string &vertex)
 {
     return pathFinder(vertex, vertex);
-}
-
-void _graph::display()
-{
-    cout << "List of adjacent vertices" << endl;
-    for (auto target : nodeList)
-    {
-        cout << "* " << target->vertex << " : ";
-        // Go forward
-        target = target->next;
-        // Loop through the linked list
-        while (target != nullptr)
-        {
-            cout << target->vertex;
-            if (target->next != nullptr)
-                cout << ", ";
-            target = target->next;
-        }
-        cout << endl;
-    }
 }
 
 void _graph::addVertex(const string &name)
@@ -82,6 +62,29 @@ void _graph::removeVertex(const string &name)
 #pragma endregion
 
 #pragma region Private - _graph
+vector<string> ds_graph::_graph::str_out()
+{
+    vector<string> result;
+
+    for (auto target : nodeList)
+    {
+        string row = target->vertex + " -> ";
+        // Go forward
+        target = target->next;
+        // Loop through the linked list
+        while (target != nullptr)
+        {
+            row = row + target->vertex;
+            if (target->next != nullptr)
+                row = row + ", ";
+            target = target->next;
+        }
+        result.push_back(row);
+    }
+
+    return result;
+}
+
 int _graph::pathFinder(const std::string &start, const std::string &end, optional<int> it,
                        optional<vector<string> *> proc_vertex)
 {
@@ -185,7 +188,7 @@ node *_graph::findNodeByName(node *ptr, const string &vertex)
 
 #pragma region DirectedGraph
 // Constructor
-graph::DirectedGraph::DirectedGraph(edge edges[], int edges_count)
+ds_graph::DirectedGraph::DirectedGraph(edge edges[], int edges_count) : _graph(ds_common::getObjName(this))
 {
     // Construct directed graph by adding edges to it
     for (int j = 0; j < edges_count; j++)
@@ -195,7 +198,7 @@ graph::DirectedGraph::DirectedGraph(edge edges[], int edges_count)
 }
 
 // Copy constructor
-graph::DirectedGraph::DirectedGraph(const DirectedGraph& _graph)
+ds_graph::DirectedGraph::DirectedGraph(const DirectedGraph &_graph) : _graph(ds_common::getObjName(this))
 {
     nodeList = _graph.nodeList;
     edge_count = _graph.edge_count;
@@ -230,7 +233,7 @@ void DirectedGraph::removeEdge(const edge &_edge)
 
 #pragma region IndirectedGraph
 // Constructor
-graph::IndirectedGraph::IndirectedGraph(edge edges[], int edges_count)
+ds_graph::IndirectedGraph::IndirectedGraph(edge edges[], int edges_count) : _graph(ds_common::getObjName(this))
 {
     // Construct indirected graph by adding edges to it
     for (int j = 0; j < edges_count; j++)
@@ -240,7 +243,7 @@ graph::IndirectedGraph::IndirectedGraph(edge edges[], int edges_count)
 }
 
 // Copy constructor
-graph::IndirectedGraph::IndirectedGraph(const IndirectedGraph& _graph)
+ds_graph::IndirectedGraph::IndirectedGraph(const IndirectedGraph &_graph) : _graph(ds_common::getObjName(this))
 {
     nodeList = _graph.nodeList;
     edge_count = _graph.edge_count;
