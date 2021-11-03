@@ -5,7 +5,7 @@
 #include "graph.h"
 
 using namespace std;
-using namespace graphs;
+using namespace graph;
 
 int main()
 {

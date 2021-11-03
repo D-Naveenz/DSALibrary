@@ -5,7 +5,7 @@
 #include <vector>
 
 // namespace for graph structure
-namespace graphs
+namespace graph
 {
 	// Node that store adjacency list items
 	struct node
@@ -48,9 +48,13 @@ namespace graphs
 		// Remove a vertex
 		void removeVertex(const std::string& name);
 
-	private:
-		// std::vector<std::string>* proc_vertex; // temporary variable to store processed vertexes
+		// Pure virtual function for adding edges
+		virtual void addEdge(const edge& _edge) = 0;
 
+		// Pure virtual function for removing edges
+		virtual void removeEdge(const edge& _edge) = 0;
+
+	private:
 		// Pathfinder algorithm
 		int pathFinder(const std::string& start, const std::string& end, std::optional<int> it = std::nullopt,
 			std::optional<std::vector<std::string>*> proc_vertex = std::nullopt);
@@ -73,6 +77,8 @@ namespace graphs
 	public:
 		DirectedGraph(edge edges[], int edges_count);
 
+		DirectedGraph(const DirectedGraph& _graph);
+
 		// Add a node
 		void addEdge(const edge& _edge);
 
@@ -84,6 +90,8 @@ namespace graphs
 	{
 	public:
 		IndirectedGraph(edge edges[], int edges_count);
+
+		IndirectedGraph(const IndirectedGraph& _graph);
 
 		// Add a node
 		void addEdge(const edge& _edge);

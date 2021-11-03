@@ -3,23 +3,20 @@
 #include <utility>
 
 using namespace std;
-using namespace graphs;
+using namespace graph;
 
 #pragma region Public - _graph
 // Constructor
-_graph::_graph()
+graph::_graph::_graph()
 {
     edge_count = 0;
-    // proc_vertex = nullptr;
 }
 
 // Destructor
-_graph::~_graph()
+graph::_graph::~_graph()
 {
     // free memory of the head
-    // nodeList = vector<node*>();
     nodeList.clear();
-    // proc_vertex->clear();
 }
 
 int _graph::getEdgeCount()
@@ -29,12 +26,11 @@ int _graph::getEdgeCount()
 
 int _graph::getVertexCount()
 {
-    return nodeList.size();
+    return int(nodeList.size());
 }
 
 int _graph::tracePaths(const string &start, const string &end)
 {
-    // proc_vertex = new vector<string>();
     if (start.compare(end) != 0)
     {
         return pathFinder(start, end);
@@ -44,7 +40,6 @@ int _graph::tracePaths(const string &start, const string &end)
 
 int _graph::traceCycles(const string &vertex)
 {
-    // proc_vertex = new vector<string>();
     return pathFinder(vertex, vertex);
 }
 
@@ -190,13 +185,20 @@ node *_graph::findNodeByName(node *ptr, const string &vertex)
 
 #pragma region DirectedGraph
 // Constructor
-DirectedGraph::DirectedGraph(edge edges[], int edges_count)
+graph::DirectedGraph::DirectedGraph(edge edges[], int edges_count)
 {
     // Construct directed graph by adding edges to it
     for (int j = 0; j < edges_count; j++)
     {
         addEdge(edges[j]);
     }
+}
+
+// Copy constructor
+graph::DirectedGraph::DirectedGraph(const DirectedGraph& _graph)
+{
+    nodeList = _graph.nodeList;
+    edge_count = _graph.edge_count;
 }
 
 void DirectedGraph::addEdge(const edge &_edge)
@@ -228,13 +230,20 @@ void DirectedGraph::removeEdge(const edge &_edge)
 
 #pragma region IndirectedGraph
 // Constructor
-IndirectedGraph::IndirectedGraph(edge edges[], int edges_count)
+graph::IndirectedGraph::IndirectedGraph(edge edges[], int edges_count)
 {
     // Construct indirected graph by adding edges to it
     for (int j = 0; j < edges_count; j++)
     {
         addEdge(edges[j]);
     }
+}
+
+// Copy constructor
+graph::IndirectedGraph::IndirectedGraph(const IndirectedGraph& _graph)
+{
+    nodeList = _graph.nodeList;
+    edge_count = _graph.edge_count;
 }
 
 void IndirectedGraph::addEdge(const edge &_edge)
