@@ -153,9 +153,9 @@
   <ItemGroup>
     <ClInclude Include="ds_model.h" />
     <ClInclude Include="graph.h" />
+    <ClInclude Include="stack.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ds_model.cpp" />
     <ClCompile Include="graph.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

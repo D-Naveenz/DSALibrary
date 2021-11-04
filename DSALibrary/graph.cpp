@@ -7,16 +7,32 @@ using namespace ds_graph;
 
 #pragma region Public - _graph
 // Constructor
-ds_graph::_graph::_graph(string obj) : dsaObj(obj)
+_graph::_graph()
 {
     edge_count = 0;
 }
 
+// Copy constructor
+_graph::_graph(const _graph& obj)
+{
+    nodeList = obj.nodeList;
+    edge_count = obj.edge_count;
+}
+
 // Destructor
-ds_graph::_graph::~_graph()
+_graph::~_graph()
 {
     // free memory of the head
     nodeList.clear();
+}
+
+void ds_graph::_graph::init(edge edges[], int edges_count)
+{
+    // Construct indirected graph by adding edges to it
+    for (int j = 0; j < edges_count; j++)
+    {
+        addEdge(edges[j]);
+    }
 }
 
 int _graph::getEdgeCount()
@@ -24,7 +40,7 @@ int _graph::getEdgeCount()
     return edge_count;
 }
 
-int _graph::getSize()
+int _graph::getVertexCount()
 {
     return int(nodeList.size());
 }
@@ -62,7 +78,7 @@ void _graph::removeVertex(const string &name)
 #pragma endregion
 
 #pragma region Private - _graph
-vector<string> ds_graph::_graph::str_out()
+vector<string> ds_graph::_graph::strOutput()
 {
     vector<string> result;
 
@@ -187,23 +203,6 @@ node *_graph::findNodeByName(node *ptr, const string &vertex)
 #pragma endregion
 
 #pragma region DirectedGraph
-// Constructor
-ds_graph::DirectedGraph::DirectedGraph(edge edges[], int edges_count) : _graph(ds_common::getObjName(this))
-{
-    // Construct directed graph by adding edges to it
-    for (int j = 0; j < edges_count; j++)
-    {
-        addEdge(edges[j]);
-    }
-}
-
-// Copy constructor
-ds_graph::DirectedGraph::DirectedGraph(const DirectedGraph &_graph) : _graph(ds_common::getObjName(this))
-{
-    nodeList = _graph.nodeList;
-    edge_count = _graph.edge_count;
-}
-
 void DirectedGraph::addEdge(const edge &_edge)
 {
     // Find start index by its name
@@ -232,23 +231,6 @@ void DirectedGraph::removeEdge(const edge &_edge)
 #pragma endregion
 
 #pragma region IndirectedGraph
-// Constructor
-ds_graph::IndirectedGraph::IndirectedGraph(edge edges[], int edges_count) : _graph(ds_common::getObjName(this))
-{
-    // Construct indirected graph by adding edges to it
-    for (int j = 0; j < edges_count; j++)
-    {
-        addEdge(edges[j]);
-    }
-}
-
-// Copy constructor
-ds_graph::IndirectedGraph::IndirectedGraph(const IndirectedGraph &_graph) : _graph(ds_common::getObjName(this))
-{
-    nodeList = _graph.nodeList;
-    edge_count = _graph.edge_count;
-}
-
 void IndirectedGraph::addEdge(const edge &_edge)
 {
     // Find indexes by its name
