@@ -6,73 +6,71 @@
 
 namespace ds_common
 {
-	using namespace std;
-
-	template <class T>
-	class dsaObj
+	class dsa_obj
 	{
 	public:
-		dsaObj() : objType(getObjType()) {}
+		explicit dsa_obj(std::string obj_type) : obj_type_(std::move(obj_type)) {}
+		virtual ~dsa_obj() = default;
+
 
 		// Print the object
 		void display()
 		{
-			cout << objType << endl;
-			cout << "{" << endl;
+			std::cout << obj_type_ << std::endl;
+			std::cout << "{" << std::endl;
 
-			vector<string> rows = str_out();
-			for (auto& element : rows)
+			for (const std::vector<std::string> rows = str_out(); auto & element : rows)
 			{
-				cout << "    " << element << endl;
+				std::cout << "    " << element << std::endl;
 			}
 
-			cout << "}" << endl;
+			std::cout << "}" << std::endl;
 		}
 
 		// Get the string output of the object
-		string toString()
+		std::string to_string()
 		{
-			string result = objType + " { ";
+			std::string result = obj_type_ + " { ";
 
-			vector<string> rows = str_out();
-			for (auto& element : rows)
+			for (const std::vector<std::string> rows = str_out(); auto & element : rows)
 			{
-				result = result + element + ", ";
+				result += element + ", ";
 			}
 
 			return result.substr(0, result.length() - 2) + " }";
 		}
 
 		// Get size of the object
-		virtual int getSize() = 0;
+		virtual size_t get_size() = 0;
 
 	protected:
-		const string objType;
+		const std::string obj_type_;
 
-		virtual vector<string> str_out() = 0;
-
-	private:
-		
-		string getObjType()
-		{
-			// convert typename into string stream
-			stringstream ss(typeid(T).name());
-			string target_str;
-			size_t margin;
-			// use space as delim for cutting string
-			while (getline(ss, target_str, ' '))
-			{
-				// Check if the token has "::" operator
-				margin = target_str.find("::");
-				if (margin != std::string::npos)
-				{
-					break;
-				}
-
-			}
-
-			// Return the partition of the target_str after the "::" operator
-			return target_str.substr(margin + 2);
-		}
+		virtual std::vector<std::string> str_out() = 0;
 	};
+
+	// template<class T>
+	// [[nodiscard]] std::string get_obj_type()
+	// {
+	// 	{
+	// 		// convert typename into string stream
+	// 		std::stringstream ss(typeid(T).name());
+	// 		std::string target_str;
+	// 		size_t margin = 0;
+	// 		// use space as delimiter for cutting string
+	// 		while (getline(ss, target_str, ' '))
+	// 		{
+	// 			// Check if the token has "::" operator
+	// 			margin = target_str.find("::");
+	// 			if (margin != std::string::npos)
+	// 			{
+	// 				break;
+	// 			}
+	//
+	// 		}
+	//
+	// 		// Return the partition of the target_str after the "::" operator
+	// 		return target_str.substr(margin + 2);
+	// 	}
+	// }
 } // namespace ds_common

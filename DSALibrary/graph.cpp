@@ -1,5 +1,4 @@
 #include "graph.h"
-#include <iostream>
 #include <utility>
 
 using namespace std;
@@ -7,116 +6,86 @@ using namespace ds_graph;
 
 #pragma region Public - _graph
 // Constructor
-_graph::_graph()
+ds_graph::graph::graph(std::string graph_type): dsa_obj(std::move(graph_type)), edge_count_(0)
 {
-    edge_count = 0;
-}
-
-// Copy constructor
-_graph::_graph(const _graph& obj)
-{
-    nodeList = obj.nodeList;
-    edge_count = obj.edge_count;
 }
 
 // Destructor
-_graph::~_graph()
+graph::~graph()
 {
-    // free memory of the head
-    nodeList.clear();
+    // free memory of the node list
+    node_list_.clear();
 }
 
-void ds_graph::_graph::init(edge edges[], int edges_count)
+void graph::init(edge edges[], int edges_count)
 {
-    // Construct indirected graph by adding edges to it
-    for (int j = 0; j < edges_count; j++)
+    // Construct graph by adding edges to it
+	for (int j = 0; j < edges_count; j++)
     {
-        addEdge(edges[j]);
+        add_edge(edges[j]);
     }
 }
 
-int _graph::getEdgeCount()
+int graph::get_edge_count() const
 {
-    return edge_count;
+    return edge_count_;
 }
 
-int _graph::getVertexCount()
-{
-    return int(nodeList.size());
-}
 
-int _graph::tracePaths(const string &start, const string &end)
+
+int graph::trace_paths(const string &start, const string &end)
 {
-    if (start.compare(end) != 0)
+    if (start != end)
     {
-        return pathFinder(start, end);
+        return path_finder(start, end);
     }
     return 0;
 }
 
-int _graph::traceCycles(const string &vertex)
+int graph::trace_cycles(const string &vertex)
 {
-    return pathFinder(vertex, vertex);
+    return path_finder(vertex, vertex);
 }
 
-void _graph::addVertex(const string &name)
+void graph::add_vertex(const string &name)
 {
-    node *newVertex = new node();
-    newVertex->vertex = name;
-    newVertex->next = nullptr;
-    nodeList.push_back(newVertex);
+	const auto new_vertex = new node();
+    new_vertex->vertex = name;
+    new_vertex->next = nullptr;
+    node_list_.push_back(new_vertex);
 }
 
-void _graph::removeVertex(const string &name)
+void graph::remove_vertex(const string &name)
 {
-    int index = findVertexByName(name);
-    vector<node *>::iterator index_itr;
-    index_itr = nodeList.begin() + index;
-    delete[] nodeList[index];
-    nodeList.erase(index_itr);
+	const int index = find_vertex_by_name(name);
+	const auto index_itr = node_list_.begin() + index;
+    delete[] node_list_[index];
+    node_list_.erase(index_itr);
+}
+
+size_t ds_graph::graph::get_size()
+{
+    return node_list_.size();
 }
 #pragma endregion
 
 #pragma region Private - _graph
-vector<string> ds_graph::_graph::strOutput()
-{
-    vector<string> result;
-
-    for (auto target : nodeList)
-    {
-        string row = target->vertex + " -> ";
-        // Go forward
-        target = target->next;
-        // Loop through the linked list
-        while (target != nullptr)
-        {
-            row = row + target->vertex;
-            if (target->next != nullptr)
-                row = row + ", ";
-            target = target->next;
-        }
-        result.push_back(row);
-    }
-
-    return result;
-}
-
-int _graph::pathFinder(const std::string &start, const std::string &end, optional<int> it,
+int graph::path_finder(const std::string &start, const std::string &end, optional<int> it,
                        optional<vector<string> *> proc_vertex)
 {
     // temporary variable to store processed vertexes
     if (!proc_vertex.has_value())
         proc_vertex = {new vector<string>()};
-    int start_i = findVertexByName(start);
-    int end_i = findVertexByName(end);
+    const int start_i = find_vertex_by_name(start);
+    const int end_i = find_vertex_by_name(end);
 
     // base case 1
     // If start or end vertex doesn't exists then return false
     if (start_i < 0 || end_i < 0)
         return 0;
 
-    node *startNode = nodeList[start_i];
-    node *endNode = nodeList[end_i];
+    node *start_node = node_list_[start_i];
+    node *end_node = node_list_[end_i];
 
     if (it.has_value())
         it = {*it + 1};
@@ -125,7 +94,7 @@ int _graph::pathFinder(const std::string &start, const std::string &end, optiona
 
     // base case 2
     // If its not the first iteration and both start and end nodes are the same
-    if (startNode == endNode && *it > 0)
+    if (start_node == end_node && *it > 0)
     {
         return 1;
     }
@@ -133,19 +102,19 @@ int _graph::pathFinder(const std::string &start, const std::string &end, optiona
     {
         // base case 3
         // If the current (start) node already belongs to the path as a milestone
-        if (std::find((*proc_vertex)->begin(), (*proc_vertex)->end(), startNode->vertex) != (*proc_vertex)->end())
+        if (ranges::find(*(*proc_vertex), start_node->vertex) != (*proc_vertex)->end())
         {
             return 0;
         }
     }
 
     // recursive steps
-    (*proc_vertex)->push_back(startNode->vertex);
-    node *ptr = startNode->next;
+    (*proc_vertex)->push_back(start_node->vertex);
+    node *ptr = start_node->next;
     int count = 0;
     while (ptr != nullptr)
     {
-        count += pathFinder(ptr->vertex, end, it, proc_vertex);
+        count += path_finder(ptr->vertex, end, it, proc_vertex);
         ptr = ptr->next;
     }
     return count;
@@ -153,7 +122,7 @@ int _graph::pathFinder(const std::string &start, const std::string &end, optiona
 #pragma endregion
 
 #pragma region Protected - _graph
-void _graph::createNode(node *ptr, string name)
+void graph::create_node(node *ptr, string name)
 {
     node *newNode = new node;
     newNode->vertex = std::move(name);
@@ -164,7 +133,7 @@ void _graph::createNode(node *ptr, string name)
     ptr->next = newNode;
 }
 
-void _graph::destroyNode(node *ptr, node *target)
+void graph::destroy_node(node *ptr, node *target)
 {
     while (ptr->next != target)
     {
@@ -176,11 +145,11 @@ void _graph::destroyNode(node *ptr, node *target)
     delete ptr;
 }
 
-int _graph::findVertexByName(const string &vertex)
+int graph::find_vertex_by_name(const string &vertex) const
 {
-    for (int i = 0; i < nodeList.size(); i++)
+    for (int i = 0; i < node_list_.size(); i++)
     {
-        if (nodeList[i]->vertex == vertex)
+        if (node_list_[i]->vertex == vertex)
         {
             return i;
         }
@@ -188,7 +157,7 @@ int _graph::findVertexByName(const string &vertex)
     return -1;
 }
 
-node *_graph::findNodeByName(node *ptr, const string &vertex)
+node *graph::find_node_by_name(node *ptr, const string &vertex)
 {
     while (ptr != nullptr)
     {
@@ -200,74 +169,97 @@ node *_graph::findNodeByName(node *ptr, const string &vertex)
     }
     return nullptr;
 }
+
+vector<string> ds_graph::graph::str_out()
+{
+    vector<string> result;
+
+    for (auto target : node_list_)
+    {
+        string row = target->vertex + " -> ";
+        // Go forward
+        target = target->next;
+        // Loop through the linked list
+        while (target != nullptr)
+        {
+	        row += target->vertex;
+	        if (target->next != nullptr)
+		        row += ", ";
+	        target = target->next;
+        }
+        result.push_back(row);
+    }
+
+    return result;
+}
 #pragma endregion
 
 #pragma region DirectedGraph
-void DirectedGraph::addEdge(const edge &_edge)
+void directed_graph::add_edge(const edge &_edge_)
 {
     // Find start index by its name
-    int start_index = findVertexByName(_edge.a);
+    int start_index = find_vertex_by_name(_edge_.a);
     if (start_index == -1)
     {
         // Create a new vertex
-        addVertex(_edge.a);
-        start_index = findVertexByName(_edge.a);
+        add_vertex(_edge_.a);
+        start_index = find_vertex_by_name(_edge_.a);
     }
-    string end = _edge.b;
+    const string end = _edge_.b;
     // Insert in the beginning
-    createNode(nodeList[start_index], end);
+    create_node(node_list_[start_index], end);
 
-    edge_count++;
+    edge_count_++;
 }
 
-void DirectedGraph::removeEdge(const edge &_edge)
+void directed_graph::remove_edge(const edge &_edge_)
 {
-    node *vertex = nodeList[findVertexByName(_edge.a)];
-    node *target = findNodeByName(vertex, _edge.b);
-    destroyNode(vertex, target);
+    node *vertex = node_list_[find_vertex_by_name(_edge_.a)];
+    node *target = find_node_by_name(vertex, _edge_.b);
+    destroy_node(vertex, target);
 
-    edge_count--;
+    edge_count_--;
 }
 #pragma endregion
 
 #pragma region IndirectedGraph
-void IndirectedGraph::addEdge(const edge &_edge)
+void undirected_graph::add_edge(const edge &_edge_)
 {
     // Find indexes by its name
-    int start_index = findVertexByName(_edge.a);
-    int end_index = findVertexByName(_edge.b);
+    int start_index = find_vertex_by_name(_edge_.a);
+    const int end_index = find_vertex_by_name(_edge_.b);
     if (start_index < 0)
     {
         // Create a new vertex
-        addVertex(_edge.a);
-        start_index = findVertexByName(_edge.a);
+        add_vertex(_edge_.a);
+        start_index = find_vertex_by_name(_edge_.a);
     }
     if (end_index < 0)
     {
         // Create a new vertex
-        addVertex(_edge.b);
-        start_index = findVertexByName(_edge.b);
+        add_vertex(_edge_.b);
+        start_index = find_vertex_by_name(_edge_.b);
     }
-    string start = _edge.a;
-    string end = _edge.b;
+    const string start = _edge_.a;
+    const string end = _edge_.b;
 
     // Insert in the beginning
-    createNode(nodeList[start_index], end);
-    createNode(nodeList[end_index], start);
+    create_node(node_list_[start_index], end);
+    create_node(node_list_[end_index], start);
 
-    edge_count++;
+    edge_count_++;
 }
 
-void IndirectedGraph::removeEdge(const edge &_edge)
+void undirected_graph::remove_edge(const edge &_edge_)
 {
-    node *vertex = nodeList[findVertexByName(_edge.a)];
-    node *target = findNodeByName(vertex, _edge.b);
-    destroyNode(vertex, target);
+    node *vertex = node_list_[find_vertex_by_name(_edge_.a)];
+    node *target = find_node_by_name(vertex, _edge_.b);
+    destroy_node(vertex, target);
 
-    vertex = nodeList[findVertexByName(_edge.b)];
-    target = findNodeByName(vertex, _edge.a);
-    destroyNode(vertex, target);
+    vertex = node_list_[find_vertex_by_name(_edge_.b)];
+    target = find_node_by_name(vertex, _edge_.a);
+    destroy_node(vertex, target);
 
-    edge_count--;
+    edge_count_--;
 }
 #pragma endregion
