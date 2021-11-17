@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include <optional>
+#include <unordered_map>
 
 constexpr auto obj_directed = "Directed Graph";
 constexpr auto obj_undirected = "Undirected Graph";
@@ -31,7 +32,7 @@ namespace ds_modals
 	{
 		// Pathfinder algorithm
 		int path_finder(const std::string& start, const std::string& end, std::optional<int> rec_it = std::nullopt,
-			std::optional<std::vector<int>*> proc_vertex = std::nullopt);
+			std::optional<std::vector<std::string>*> proc_vertex = std::nullopt);
 
 	public:
 		// Constructor
@@ -50,27 +51,27 @@ namespace ds_modals
 		int trace_paths(const std::string& start, const std::string& end);
 		// Returns number of cycles between first given vertex and the second given vertex
 		int trace_cycles(const std::string& vertex);
+		// Print the graph
+		void display() override;
 
 	protected:
 		struct edge_data
 		{
-			int adj_vertex;
+			std::string adj_vertex;
 			double weight;
 
-			edge_data() : adj_vertex(0), weight(0) {}
-			edge_data(const int r, const double w): adj_vertex(r), weight(w) {}
+			edge_data() : weight(0) {}
+			edge_data(std::string r, const double w): adj_vertex(std::move(r)), weight(w) {}
 		};
 
-		std::vector<std::string> vertex_list_;		// vertices mapper
-		std::vector<std::vector<edge_data>> adj_list_;	// Adjacency list as a 2-D vector
+		std::unordered_map<std::string, std::vector<edge_data>> adj_list_;	// Adjacency list
 		int edges_count_;
 
 		// Initializer that helps to initialize Direct/Indirect graphs
 		void init(const std::vector<edge>& edges);
-		[[nodiscard]] int find_vertex_by_name(const std::string& vertex) const;
 		void add_vertex(const std::string &name);
 		void remove_vertex(const std::string &name);
-		std::vector<std::string> str_out() override;
+		void update_json() override;
 	};
 
 	class directed_graph final : public graph_controller
@@ -87,7 +88,6 @@ namespace ds_modals
 
 		void add_edge(const std::string& a, const std::string& b, double weight = 1) override;
 		void remove_edge(std::string a, std::string b) override;
-		
 	};
 
 	class undirected_graph final : public graph_controller

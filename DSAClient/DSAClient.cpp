@@ -11,7 +11,7 @@ int main()
 {
 	cout << "~~~~~~ Directed Graph ~~~~~~" << endl;
 	// Graph direct_edges array
-	const vector<edge> d_graph = {
+	const vector<edge> d_graph {
 		{"V1", "V2"},
 		{"V3", "V2"}, {"V3", "V4"},
 		{"V4", "V2"}, {"V4", "V5"},
@@ -20,7 +20,9 @@ int main()
 
 	// Construct graph
 	directed_graph directed_graph(d_graph);
+	cout << "Display the graph in JSON indented format:" << endl; 
 	directed_graph.display();
+	cout << endl << "Display is JSON raw format:" << endl;
 	cout << directed_graph.to_string() << endl;
 	cout << endl;
 

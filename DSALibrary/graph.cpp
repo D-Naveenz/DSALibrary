@@ -5,30 +5,18 @@ using namespace std;
 using namespace ds_modals;
 
 #pragma region graph_controller - Private
-int graph_controller::find_vertex_by_name(const string& vertex) const
-{
-	if (const auto it = ranges::find(vertex_list_, vertex); it != vertex_list_.end())
-	{
-		return static_cast<int>(distance(vertex_list_.begin(), it));
-	}
-	else
-	{
-		return -1;
-	}
-}
-
-int graph_controller::path_finder(const string& start, const string& end, optional<int> rec_it, optional<vector<int>*> proc_vertex)
+int graph_controller::path_finder(const string& start, const string& end, optional<int> rec_it, optional<vector<string>*> proc_vertex)
 {
 	// temporary variable to store processed vertexes
 	if (!proc_vertex.has_value())
-		proc_vertex = { new vector<int>() };
-	const int start_i = find_vertex_by_name(start);
-	const int end_i = find_vertex_by_name(end);
+		proc_vertex = { new vector<string>() };
 
 	// base case 1
 	// If start or end vertex doesn't exists then return false
-	if (start_i < 0 || end_i < 0)
+	if (!adj_list_.contains(start) || !adj_list_.contains(end))
+	{
 		return 0;
+	}
 
 	if (rec_it.has_value())
 		rec_it = { *rec_it + 1 };
@@ -37,7 +25,7 @@ int graph_controller::path_finder(const string& start, const string& end, option
 
 	// base case 2
 	// If its not the first iteration and both start and end vertices are the same
-	if (start_i == end_i && *rec_it > 0)
+	if (start == end && *rec_it > 0)
 	{
 		return 1;
 	}
@@ -45,21 +33,20 @@ int graph_controller::path_finder(const string& start, const string& end, option
 	{
 		// base case 3
 		// If the current (start) node already belongs to the path as a milestone
-		if (ranges::find(*(*proc_vertex), start_i) != (*proc_vertex)->end())
+		if (ranges::find(*(*proc_vertex), start) != (*proc_vertex)->end())
 		{
 			return 0;
 		}
 	}
 
 	// recursive steps
-	(*proc_vertex)->push_back(start_i);
+	(*proc_vertex)->push_back(start);
 	int count = 0;
-
-	for (auto& it_x : adj_list_)
+	for (auto& [fst, snd] : adj_list_)
 	{
-		for (const auto& [adj_vertex, size] : it_x)
+		for (auto &it : snd)
 		{
-			count += path_finder(vertex_list_[adj_vertex], end, rec_it, proc_vertex);
+			count += path_finder(it.adj_vertex, end, rec_it, proc_vertex);
 		}
 	}
 
@@ -68,13 +55,13 @@ int graph_controller::path_finder(const string& start, const string& end, option
 #pragma endregion 
 
 #pragma region graph_controller - Public
-ds_modals::graph_controller::graph_controller(const std::string& obj_type) : dsa_obj(obj_type), edges_count_(0)
+graph_controller::graph_controller(const std::string& obj_type) : dsa_obj(obj_type), edges_count_(0)
 {
 }
 
 inline size_t graph_controller::get_vertices_count() const
 {
-	return vertex_list_.size();
+	return adj_list_.size();
 }
 
 inline size_t graph_controller::size() const
@@ -96,6 +83,10 @@ int graph_controller::trace_cycles(const std::string& vertex)
 	return path_finder(vertex, vertex);
 }
 
+void graph_controller::display()
+{
+	cout << ds_modal_.dump(4) << endl;
+}
 #pragma endregion
 
 #pragma region graph_controller - Protected
@@ -110,18 +101,27 @@ void graph_controller::init(const vector<edge>& edges)
 
 void graph_controller::add_vertex(const string& name)
 {
-	vertex_list_.push_back(name);
-	const int target = find_vertex_by_name(name);
-	adj_list_.emplace(adj_list_.begin() + target, vector<edge_data>());
+	adj_list_[name] = vector<edge_data>();
 }
 
 void graph_controller::remove_vertex(const string& name)
 {
-	if (const auto it = ranges::find(vertex_list_, name); it != vertex_list_.end())
+	if (adj_list_.contains(name))
 	{
-		vertex_list_.erase(it);
-		const int target = find_vertex_by_name(name);
-		adj_list_.erase(adj_list_.begin() + target);
+		adj_list_[name].clear();
+		// unbind target vertex from the edges
+		for (auto& [fst, snd] : adj_list_)
+		{
+			for (auto it = snd.begin(); it != snd.end(); ++it)
+			{
+				if ((*it).adj_vertex == name)
+				{
+					snd.erase(it);
+				}
+			}
+		}
+		// remove vertex at last
+		adj_list_.erase(name);
 	}
 	else
 	{
@@ -129,123 +129,95 @@ void graph_controller::remove_vertex(const string& name)
 	}
 }
 
-vector<string> graph_controller::str_out()
+void graph_controller::update_json()
 {
-	vector<string> result;
-	int row_count = 0;
-
-	for (auto& row : adj_list_)
+	auto& a_list = ds_modal_["data"]["adjacency_list"];
+	auto& vctr = ds_modal_["data"]["vectors"];
+	vctr.clear();
+	for (auto &[left, right] : adj_list_)
 	{
-		string row_str = vertex_list_[row_count] + " ->  ";
-		int cell_count = 0;
-
-		for (auto row_obj : row)
+		vctr.push_back(left);
+		a_list[left].clear();
+		for (auto &it : right)
 		{
-			row_str += vertex_list_[cell_count] + ", ";
-			cell_count++;
+			a_list[left].push_back({{"adj_vertex", it.adj_vertex}, {"weight", it.weight}});
 		}
-
-		row_str = row_str.substr(0, row_str.length() - 2);
-		result.push_back(row_str);
-		row_count++;
 	}
-
-	return result;
 }
 #pragma endregion
 
 #pragma region DirectedGraph
 void directed_graph::add_edge(const std::string& a, const std::string& b, const double weight)
 {
-	// Find indexes by its name
-	int start_index = find_vertex_by_name(a);
-	int end_index = find_vertex_by_name(b);
-
-	if (start_index < 0)
+	if (!adj_list_.contains(a))
 	{
 		// Create a new vertex
 		add_vertex(a);
-		start_index = find_vertex_by_name(a);
 	}
-	if (end_index < 0)
+	if (!adj_list_.contains(b))
 	{
 		// Create a new vertex
 		add_vertex(b);
-		end_index = find_vertex_by_name(b);
 	}
 
 	// Insert in the beginning
-	adj_list_[start_index].emplace_back(end_index, weight);
-
+	adj_list_[a].emplace_back(b, weight);
+	update_json();
 	edges_count_++;
 }
 
 void directed_graph::remove_edge(std::string a, std::string b)
 {
-	// Find indexes by its name
-	const int start_index = find_vertex_by_name(a);
-	const int end_index = find_vertex_by_name(b);
-
-	for (auto it = adj_list_[start_index].begin(); it != adj_list_[start_index].end(); ++it)
+	for (auto it = adj_list_[a].begin(); it != adj_list_[a].end(); ++it)
 	{
-		if (const auto idx = it - adj_list_[start_index].begin(); adj_list_[start_index][idx].adj_vertex == end_index)
+		if ((*it).adj_vertex == b)
 		{
-			adj_list_[start_index].erase(it);
+			adj_list_[a].erase(it);
 		}
 	}
+	update_json();
 }
 #pragma endregion
 
 #pragma region UndirectedGraph
 void ds_modals::undirected_graph::add_edge(const std::string& a, const std::string& b, double weight)
 {
-	// Find indexes by its name
-	int start_index = find_vertex_by_name(a);
-	int end_index = find_vertex_by_name(b);
-
-	if (start_index < 0)
+	if (!adj_list_.contains(a))
 	{
 		// Create a new vertex
 		add_vertex(a);
-		start_index = find_vertex_by_name(a);
 	}
-	if (end_index < 0)
+	if (!adj_list_.contains(b))
 	{
 		// Create a new vertex
 		add_vertex(b);
-		end_index = find_vertex_by_name(b);
 	}
 
-	const edge_data result1 = { end_index, weight };
-	const edge_data result2 = { start_index, weight };
-
 	// Insert in the beginning
-	adj_list_[start_index].emplace_back(end_index, weight);
-	adj_list_[end_index].emplace_back(start_index, weight);
-
+	adj_list_[a].emplace_back(b, weight);
+	adj_list_[b].emplace_back(a, weight);
+	update_json();
 	edges_count_++;
 }
 
 void ds_modals::undirected_graph::remove_edge(std::string a, std::string b)
 {
-	// Find indexes by its name
-	const int start_index = find_vertex_by_name(a);
-	const int end_index = find_vertex_by_name(b);
-
-	for (auto it = adj_list_[start_index].begin(); it != adj_list_[start_index].end(); ++it)
+	for (auto it = adj_list_[a].begin(); it != adj_list_[a].end(); ++it)
 	{
-		if (const auto idx = it - adj_list_[start_index].begin(); adj_list_[start_index][idx].adj_vertex == end_index)
+		if ((*it).adj_vertex == b)
 		{
-			adj_list_[start_index].erase(it);
+			adj_list_[a].erase(it);
 		}
 	}
 
-	for (auto it = adj_list_[end_index].begin(); it != adj_list_[end_index].end(); ++it)
+	for (auto it = adj_list_[b].begin(); it != adj_list_[b].end(); ++it)
 	{
-		if (const auto idx = it - adj_list_[end_index].begin(); adj_list_[end_index][idx].adj_vertex == start_index)
+		if ((*it).adj_vertex == a)
 		{
-			adj_list_[end_index].erase(it);
+			adj_list_[b].erase(it);
 		}
 	}
+	update_json();
+	edges_count_--;
 }
 #pragma endregion
