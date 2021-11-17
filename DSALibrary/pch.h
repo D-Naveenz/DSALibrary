@@ -1,22 +1,31 @@
 #pragma once
 #include <iostream>
-#include <sstream>
+// #include <sstream>
 #include <string>
 #include <vector>
+#include <nlohmann/json.hpp>
 
-namespace ds_common
+using json = nlohmann::json;
+
+namespace ds_modals
 {
+	//constexpr auto ds_version = 1.0;
+
 	class dsa_obj
 	{
 	public:
-		explicit dsa_obj(std::string obj_type) : obj_type_(std::move(obj_type)) {}
+		explicit dsa_obj(std::string obj_type)
+		{
+			ds_modal_["structure"] = std::move(obj_type);
+			ds_modal_["version"] = 1.0;
+		}
 		virtual ~dsa_obj() = default;
 
 
 		// Print the object
 		void display()
 		{
-			std::cout << obj_type_ << std::endl;
+			std::cout << ds_modal_["structure"] << std::endl;
 			std::cout << "{" << std::endl;
 
 			for (const std::vector<std::string> rows = str_out(); auto & element : rows)
@@ -30,7 +39,7 @@ namespace ds_common
 		// Get the string output of the object
 		std::string to_string()
 		{
-			std::string result = obj_type_ + " { ";
+			std::string result = ds_modal_["structure"].get<std::string>() + " { ";
 
 			for (const std::vector<std::string> rows = str_out(); auto & element : rows)
 			{
@@ -41,10 +50,10 @@ namespace ds_common
 		}
 
 		// Get size of the object
-		virtual size_t get_size() = 0;
+		[[nodiscard]] virtual size_t size() const = 0;
 
 	protected:
-		const std::string obj_type_;
+		json ds_modal_;
 
 		virtual std::vector<std::string> str_out() = 0;
 	};

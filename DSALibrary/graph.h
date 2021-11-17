@@ -1,110 +1,108 @@
 #pragma once
-
-#include "ds_model.h"
+#include "pch.h"
 #include <optional>
 
 constexpr auto obj_directed = "Directed Graph";
 constexpr auto obj_undirected = "Undirected Graph";
 
 // namespace for graph structure
-namespace ds_graph
+namespace ds_modals
 {
-	// Node that store adjacency list items
-	struct node
-	{
-		std::string vertex;
-		node* next{};
-	};
-
-	// structure to store edge data of the graph
 	struct edge
 	{
-		std::string a;
-		std::string b;
+		std::string l_vertex;
+		std::string r_vertex;
+		double weight;
+
+		edge(std::string l, std::string r, const std::optional<double> w = std::nullopt) : l_vertex(std::move(l)), r_vertex(std::move(r))
+		{
+			if (w.has_value())
+			{
+				weight = *w;
+			}
+			else
+			{
+				weight = 1.0;
+			}
+		}
 	};
 
-	class graph : public ds_common::dsa_obj
+	class graph_controller : public dsa_obj
 	{
+		// Pathfinder algorithm
+		int path_finder(const std::string& start, const std::string& end, std::optional<int> rec_it = std::nullopt,
+			std::optional<std::vector<int>*> proc_vertex = std::nullopt);
+
 	public:
-		// Default constructor
-		graph(std::string graph_type);
-		// Destructor
-		~graph() override;
+		// Constructor
+		explicit graph_controller(const std::string& obj_type);
 
-		// Initializer that helps to initialize Direct/Indirect graphs
-		void init(edge edges[], int edges_count);
+		// The number of vertexes that are currently on the graph
+		[[nodiscard]] inline size_t get_vertices_count() const;
+		// Get edges count
+		[[nodiscard]] inline size_t size() const override;
 
-		// The number of edges that are currently on the graph
-		[[nodiscard]] int get_edge_count() const;
-
+		// Pure virtual function for adding edges
+		virtual void add_edge(const std::string& a, const std::string& b, double weight) = 0;
+		// Pure virtual function for remove edges
+		virtual void remove_edge(std::string a, std::string b) = 0;
 		// Returns number of paths between first given vertex and the second given vertex
 		int trace_paths(const std::string& start, const std::string& end);
-
 		// Returns number of cycles between first given vertex and the second given vertex
 		int trace_cycles(const std::string& vertex);
 
-		// Create a vertex
-		void add_vertex(const std::string& name);
-
-		// Remove a vertex
-		void remove_vertex(const std::string& name);
-
-		// Pure virtual function for adding edges
-		virtual void add_edge(const edge& _edge_) = 0;
-
-		// Pure virtual function for removing edges
-		virtual void remove_edge(const edge& _edge_) = 0;
-
-		// The number of vertexes that are currently on the graph
-		size_t get_size() override;
-
-	private:
-		// Pathfinder algorithm
-		int path_finder(const std::string& start, const std::string& end, std::optional<int> it = std::nullopt,
-			std::optional<std::vector<std::string>*> proc_vertex = std::nullopt);
-
 	protected:
-		std::vector<node*> node_list_; // Adjacency list as array of pointers
-		int edge_count_;               // The number of edges that are currently on the graph
+		struct edge_data
+		{
+			int adj_vertex;
+			double weight;
 
-		static void create_node(node* ptr, std::string name);
+			edge_data() : adj_vertex(0), weight(0) {}
+			edge_data(const int r, const double w): adj_vertex(r), weight(w) {}
+		};
 
-		static void destroy_node(node* ptr, node* target);
+		std::vector<std::string> vertex_list_;		// vertices mapper
+		std::vector<std::vector<edge_data>> adj_list_;	// Adjacency list as a 2-D vector
+		int edges_count_;
 
+		// Initializer that helps to initialize Direct/Indirect graphs
+		void init(const std::vector<edge>& edges);
 		[[nodiscard]] int find_vertex_by_name(const std::string& vertex) const;
-
-		static node* find_node_by_name(node* ptr, const std::string& vertex);
-
+		void add_vertex(const std::string &name);
+		void remove_vertex(const std::string &name);
 		std::vector<std::string> str_out() override;
 	};
 
-	class directed_graph final : public graph
+	class directed_graph final : public graph_controller
 	{
 	public:
-		directed_graph(edge edges[], const int edges_count): graph(obj_directed)
+		directed_graph(): graph_controller(obj_directed)
 		{
-			init(edges, edges_count);
 		}
 
-		// Add a node
-		void add_edge(const edge& _edge_) override;
+		explicit directed_graph(const std::vector<edge>& edges): graph_controller(obj_directed)
+		{
+			init(edges);
+		}
 
-		// Remove a node
-		void remove_edge(const edge& _edge_) override;
+		void add_edge(const std::string& a, const std::string& b, double weight = 1) override;
+		void remove_edge(std::string a, std::string b) override;
+		
 	};
 
-	class undirected_graph final : public graph
+	class undirected_graph final : public graph_controller
 	{
 	public:
-		undirected_graph(edge edges[], const int edges_count): graph(obj_undirected)
+		undirected_graph(): graph_controller(obj_undirected)
 		{
-			init(edges, edges_count);
 		}
 
-		// Add a node
-		void add_edge(const edge& _edge_) override;
+		explicit undirected_graph(const std::vector<edge>& edges): graph_controller(obj_undirected)
+		{
+			init(edges);
+		}
 
-		// Remove a node
-		void remove_edge(const edge& _edge_) override;
+		void add_edge(const std::string& a, const std::string& b, double weight = 1) override;
+		void remove_edge(std::string a, std::string b) override;
 	};
-} // namespace ds_graph
+}
