@@ -53,6 +53,8 @@ namespace ds_modals
 		int trace_cycles(const std::string& vertex);
 		// Print the graph
 		void display() override;
+		void serialize() override;
+		void deserialize(std::ifstream ifs) override;
 
 	protected:
 		struct edge_data
@@ -71,7 +73,6 @@ namespace ds_modals
 		void init(const std::vector<edge>& edges);
 		void add_vertex(const std::string &name);
 		void remove_vertex(const std::string &name);
-		void update_json() override;
 	};
 
 	class directed_graph final : public graph_controller

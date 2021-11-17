@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include <fstream>
 
 using json = nlohmann::json;
 
@@ -19,20 +20,24 @@ namespace ds_modals
 		}
 		virtual ~dsa_obj() = default;
 
+		// Get size of the object
+		[[nodiscard]] virtual size_t size() const = 0;
 		// Get the string output of the object
-		[[nodiscard]] std::string to_string() const
+		std::string to_string()
 		{
+			serialize();
 			return ds_modal_.dump();
 		}
 
-		// Get size of the object
-		[[nodiscard]] virtual size_t size() const = 0;
 		// Print the object
 		virtual void display() = 0;
 
 	protected:
 		json ds_modal_;
 
-		virtual void update_json() = 0;
+		// Update JSON object
+		virtual void serialize() = 0;
+		// Parse a JSON into a object
+		virtual void deserialize(std::ifstream ifs) = 0;
 	};
 } // namespace ds_common

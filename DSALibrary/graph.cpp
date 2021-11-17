@@ -3,6 +3,7 @@
 
 using namespace std;
 using namespace ds_modals;
+using namespace nlohmann;
 
 #pragma region graph_controller - Private
 int graph_controller::path_finder(const string& start, const string& end, optional<int> rec_it, optional<vector<string>*> proc_vertex)
@@ -44,7 +45,7 @@ int graph_controller::path_finder(const string& start, const string& end, option
 	int count = 0;
 	for (auto& [fst, snd] : adj_list_)
 	{
-		for (auto &it : snd)
+		for (auto& it : snd)
 		{
 			count += path_finder(it.adj_vertex, end, rec_it, proc_vertex);
 		}
@@ -85,7 +86,37 @@ int graph_controller::trace_cycles(const std::string& vertex)
 
 void graph_controller::display()
 {
+	serialize();
 	cout << ds_modal_.dump(4) << endl;
+}
+
+void graph_controller::serialize()
+{
+	auto& a_list = ds_modal_["data"]["adjacency_list"];
+	auto& vct = ds_modal_["data"]["vectors"];
+	vct.clear();
+	for (auto& [left, right] : adj_list_)
+	{
+		vct.push_back(left);
+		a_list[left].clear();
+		for (auto& it : right)
+		{
+			a_list[left].push_back({ {"adj_vertex", it.adj_vertex}, {"weight", it.weight} });
+		}
+	}
+}
+
+void graph_controller::deserialize(ifstream ifs)
+{
+	json j;
+	try
+	{
+		j = json::parse(ifs);
+	}
+	catch (json::parse_error& ex)
+	{
+		std::cerr << "parse error at byte " << ex.byte << std::endl;
+	}
 }
 #pragma endregion
 
@@ -128,22 +159,6 @@ void graph_controller::remove_vertex(const string& name)
 		throw out_of_range("Couldn't find the vertex named " + name + ".");
 	}
 }
-
-void graph_controller::update_json()
-{
-	auto& a_list = ds_modal_["data"]["adjacency_list"];
-	auto& vctr = ds_modal_["data"]["vectors"];
-	vctr.clear();
-	for (auto &[left, right] : adj_list_)
-	{
-		vctr.push_back(left);
-		a_list[left].clear();
-		for (auto &it : right)
-		{
-			a_list[left].push_back({{"adj_vertex", it.adj_vertex}, {"weight", it.weight}});
-		}
-	}
-}
 #pragma endregion
 
 #pragma region DirectedGraph
@@ -162,7 +177,6 @@ void directed_graph::add_edge(const std::string& a, const std::string& b, const 
 
 	// Insert in the beginning
 	adj_list_[a].emplace_back(b, weight);
-	update_json();
 	edges_count_++;
 }
 
@@ -175,7 +189,6 @@ void directed_graph::remove_edge(std::string a, std::string b)
 			adj_list_[a].erase(it);
 		}
 	}
-	update_json();
 }
 #pragma endregion
 
@@ -196,7 +209,6 @@ void ds_modals::undirected_graph::add_edge(const std::string& a, const std::stri
 	// Insert in the beginning
 	adj_list_[a].emplace_back(b, weight);
 	adj_list_[b].emplace_back(a, weight);
-	update_json();
 	edges_count_++;
 }
 
@@ -217,7 +229,6 @@ void ds_modals::undirected_graph::remove_edge(std::string a, std::string b)
 			adj_list_[b].erase(it);
 		}
 	}
-	update_json();
 	edges_count_--;
 }
 #pragma endregion
